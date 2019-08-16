@@ -35,9 +35,7 @@ public class Plugin implements TestExecutionListener {
     private boolean isPluginDisabled;
     private boolean isSuiteSuccess = true;
 
-
-    @Override
-    public void testPlanExecutionStarted(TestPlan testPlan) {
+    public Plugin() {
         isPluginDisabled = true;
         String payloadpath = System.getProperty("payloadpath");;
         String testmonitorUrl = System.getProperty("testmonitorurl");
@@ -61,7 +59,20 @@ public class Plugin implements TestExecutionListener {
                 currentSuiteIteration.cases = new ArrayList();
 
                 suiteTimer = Stopwatch.createStarted();
-                isPluginDisabled = false;
+
+                if (result.capabilities.containsKey("browserName")) {
+                    // remove "technology" prefix from the browserName. old CB version uses technology.browser as browserName
+                    // FIXME: this should be removed once CB backend is adapted to send only the browser name without technology prefix.
+                    String browserName = result.capabilities.get("browserName");
+                    int browserNameIdx = browserName.indexOf('.');
+                    if (browserNameIdx > 0)
+                        browserName = browserName.substring(browserNameIdx + 1);
+                    System.setProperty("browserName", browserName);
+                    isPluginDisabled = false;
+                    return;
+                }
+
+                logError("Plugin will be disabled. browserName is not specified in capabilities.");
             } catch (Exception e) {
                 logError("Plugin will be disabled. Unable to read/deserialize payload file.", e);
             }
@@ -116,7 +127,7 @@ public class Plugin implements TestExecutionListener {
         testTimer = Stopwatch.createStarted();
 
         String testCaseName = testIdentifier.getDisplayName();
-
+        testCaseName = testCaseName.substring(0, testCaseName.length() - 2);
         currentCaseIndex++;
 
         currentCase = new ResultModel.Case();
@@ -175,6 +186,7 @@ public class Plugin implements TestExecutionListener {
         isSuiteSuccess = false;
         String testName = testIdentifier.getDisplayName();
 
+        testName = testName.substring(0, testName.length() - 2);
         ResultModel.Step step = new ResultModel.Step();
         step.isSuccess = false;
         step.screenshot = takeWebDriverScreenshot();
