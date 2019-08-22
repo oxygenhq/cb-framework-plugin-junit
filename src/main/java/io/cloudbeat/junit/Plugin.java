@@ -150,7 +150,7 @@ public class Plugin implements TestExecutionListener {
         boolean isSuccess = testExecutionResult.getStatus() == TestExecutionResult.Status.SUCCESSFUL;
 
         if (!isSuccess) {
-            onFailure(testIdentifier);
+            onFailure(testIdentifier, testExecutionResult.getThrowable().get());
             return;
         }
 
@@ -182,14 +182,18 @@ public class Plugin implements TestExecutionListener {
             logInfo("Status report for '" + testName + "' has been sent");
     }
 
-    private void onFailure(TestIdentifier testIdentifier) {
-        isSuiteSuccess = false;
+    private void onFailure(TestIdentifier testIdentifier, Throwable error) {
+        String failureReason = error.getLocalizedMessage();
+
+        result.isSuccess = false;
+        result.failure = failureReason;
         String testName = testIdentifier.getDisplayName();
 
         testName = testName.substring(0, testName.length() - 2);
         ResultModel.Step step = new ResultModel.Step();
         step.isSuccess = false;
         step.screenshot = takeWebDriverScreenshot();
+        step.failure = failureReason;
 
         testTimer.stop();
         step.duration = testTimer.elapsed().toMillis();
