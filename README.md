@@ -17,7 +17,18 @@ Add the plugin to your project. If you are using a maven based project, you can 
   <version>0.1.0</version>  
 </dependency>
 ```
-
+For running multiple chosen tests install maven surefire plugin with version equal or higher then 2.22.0
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>2.22.0</version>
+    </plugin>
+  </plugins>
+</build>
+``` 
 
 ### Working with Selenium
 
