@@ -183,7 +183,17 @@ public class Plugin implements TestExecutionListener {
     }
 
     private void onFailure(TestIdentifier testIdentifier, Throwable error) {
-        String failureReason = error.getLocalizedMessage();
+        FailureModel failureModel = new FailureModel();
+        failureModel.type = "JUNIT_ERROR";
+        failureModel.message = error.getLocalizedMessage();
+        failureModel.isFatal = true;
+
+        String failureReason = "";
+        try {
+            failureReason = new ObjectMapper().writeValueAsString(failureModel);
+        } catch (JsonProcessingException e) {
+            logError("Cannot serialize failure details");
+        }
 
         result.isSuccess = false;
         result.failure = failureReason;
@@ -194,6 +204,7 @@ public class Plugin implements TestExecutionListener {
         step.isSuccess = false;
         step.screenshot = takeWebDriverScreenshot();
         step.failure = failureReason;
+        step.name = testName;
 
         testTimer.stop();
         step.duration = testTimer.elapsed().toMillis();
@@ -203,6 +214,8 @@ public class Plugin implements TestExecutionListener {
         caseIteration.isSuccess = false;
         caseIteration.steps = new ArrayList();
         caseIteration.steps.add(step);
+        caseIteration.failure = failureReason;
+
 
         if (currentCase.iterations != null) {
             currentCase.iterations.add(caseIteration);
