@@ -87,6 +87,7 @@ public class Plugin implements TestExecutionListener {
             return;
         }
 
+
         currentSuiteIteration.isSuccess = isSuiteSuccess;
         result.iterations.add(currentSuiteIteration);
         result.endTime = new Date();
@@ -120,7 +121,7 @@ public class Plugin implements TestExecutionListener {
 
     @Override
     public void executionStarted(TestIdentifier testIdentifier) {
-        if(isPluginDisabled) {
+        if(isPluginDisabled || !testIdentifier.isTest()) {
             return;
         }
 
@@ -143,7 +144,7 @@ public class Plugin implements TestExecutionListener {
 
     @Override
     public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
-        if(isPluginDisabled) {
+        if(isPluginDisabled || !testIdentifier.isTest()) {
             return;
         }
 
@@ -155,6 +156,7 @@ public class Plugin implements TestExecutionListener {
         }
 
         String testName = testIdentifier.getDisplayName();
+        testName = testName.substring(0, testName.length() - 2);
 
         ResultModel.Step step = new ResultModel.Step();
         step.isSuccess = true;
@@ -183,6 +185,7 @@ public class Plugin implements TestExecutionListener {
     }
 
     private void onFailure(TestIdentifier testIdentifier, Throwable error) {
+        isSuiteSuccess = false;
         FailureModel failureModel = new FailureModel();
         failureModel.type = "JUNIT_ERROR";
         failureModel.message = error.getLocalizedMessage();
