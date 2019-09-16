@@ -144,11 +144,18 @@ public class Plugin implements TestExecutionListener {
 
     @Override
     public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
-        if(isPluginDisabled || !testIdentifier.isTest()) {
+
+        boolean isSuccess = testExecutionResult.getStatus() == TestExecutionResult.Status.SUCCESSFUL;
+
+        if(!testIdentifier.isTest() && !isSuccess) {
+            isPluginDisabled = true;
+            logInfo("Plugin disabled because of suite error");
             return;
         }
 
-        boolean isSuccess = testExecutionResult.getStatus() == TestExecutionResult.Status.SUCCESSFUL;
+        if(isPluginDisabled || !testIdentifier.isTest()) {
+            return;
+        }
 
         if (!isSuccess) {
             onFailure(testIdentifier, testExecutionResult.getThrowable().get());
