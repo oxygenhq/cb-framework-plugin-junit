@@ -212,7 +212,12 @@ public class Plugin implements TestExecutionListener {
         testName = testName.substring(0, testName.length() - 2);
         ResultModel.Step step = new ResultModel.Step();
         step.isSuccess = false;
-        step.screenshot = takeWebDriverScreenshot();
+        try{
+            step.screenshot = takeWebDriverScreenshot();
+        }
+        catch(Exception e){
+            logError("Unable to take screenshot", e);
+        }
         step.failure = failureReason;
         step.name = testName;
 
