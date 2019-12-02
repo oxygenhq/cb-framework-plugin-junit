@@ -29,8 +29,8 @@ public class Plugin implements TestExecutionListener {
     private String testMonitorStatusUrl;
     private String testMonitorToken;
     private int currentCaseIndex = 0;
-    private ResultModel.Case currentCase;
-    private ResultModel.SuiteIteration currentSuiteIteration;
+    private CaseModel currentCase;
+    private SuiteModel currentSuite;
     private final static String TEST_RESULTS_FILENAME = ".CB_TEST_RESULTS";
     private boolean isPluginDisabled;
     private boolean isSuiteSuccess = true;
@@ -52,11 +52,11 @@ public class Plugin implements TestExecutionListener {
                 result.capabilities = payload.capabilities;
                 result.metadata = payload.metadata;
                 result.environmentVariables = payload.environmentVariables;
-                result.iterations = new ArrayList();
+                result.suites = new ArrayList();
                 result.startTime = new Date();
 
-                currentSuiteIteration = new ResultModel.SuiteIteration();
-                currentSuiteIteration.cases = new ArrayList();
+                currentSuite = new SuiteModel();
+                currentSuite.cases = new ArrayList();
 
                 suiteTimer = Stopwatch.createStarted();
 
@@ -88,14 +88,14 @@ public class Plugin implements TestExecutionListener {
         }
 
 
-        currentSuiteIteration.isSuccess = isSuiteSuccess;
-        result.iterations.add(currentSuiteIteration);
+        currentSuite.status = isSuiteSuccess ? ResultStatus.Passed : ResultStatus.Failed;
+        result.suites.add(currentSuite);
         result.endTime = new Date();
-        result.isSuccess = isSuiteSuccess;
-        result.iterationsTotal = 1;
-        result.iterationsFailed = isSuiteSuccess ? 0 : 1;
-        result.iterationsWarning = 0;
-        result.iterationsPassed = isSuiteSuccess ? 1 : 0;
+        result.status = currentSuite.status;
+        //result.iterationsTotal = 1;
+        //result.iterationsFailed = isSuiteSuccess ? 0 : 1;
+        //result.iterationsWarning = 0;
+        //result.iterationsPassed = isSuiteSuccess ? 1 : 0;
 
         suiteTimer.stop();
         long duration = suiteTimer.elapsed().getSeconds();
@@ -131,7 +131,7 @@ public class Plugin implements TestExecutionListener {
         testCaseName = testCaseName.substring(0, testCaseName.length() - 2);
         currentCaseIndex++;
 
-        currentCase = new ResultModel.Case();
+        currentCase = new CaseModel();
 
         PayloadModel.Case caze = payload.cases.get(testCaseName);
         if (caze != null) {
@@ -139,7 +139,6 @@ public class Plugin implements TestExecutionListener {
         }
 
         currentCase.name = testCaseName;
-        currentCase.iterations = new ArrayList();
     }
 
     @Override
@@ -165,23 +164,20 @@ public class Plugin implements TestExecutionListener {
         String testName = testIdentifier.getDisplayName();
         testName = testName.substring(0, testName.length() - 2);
 
-        ResultModel.Step step = new ResultModel.Step();
-        step.isSuccess = true;
+        StepModel step = new StepModel();
+        step.status = ResultStatus.Passed;
         step.name = testName;
 
         testTimer.stop();
         step.duration = testTimer.elapsed().toMillis();
 
-        ResultModel.CaseIteration caseIteration = new ResultModel.CaseIteration();
-        caseIteration.iterationNum = currentCaseIndex;
-        caseIteration.isSuccess = true;
-        caseIteration.steps = new ArrayList();
-        caseIteration.steps.add(step);
 
-        currentCase.iterations.add(caseIteration);
-        currentCase.isSuccess = true;
+        currentCase.iterationNum = currentCaseIndex;
+        currentCase.status = ResultStatus.Passed;
+        currentCase.steps = new ArrayList();
+        currentCase.steps.add(step);
 
-        currentSuiteIteration.cases.add(currentCase);
+        currentSuite.cases.add(currentCase);
 
         StatusModel status = createBaseStatusModel(testName);
         status.caze.iterationsFailed = 0;
@@ -196,48 +192,34 @@ public class Plugin implements TestExecutionListener {
         FailureModel failureModel = new FailureModel();
         failureModel.type = "JUNIT_ERROR";
         failureModel.message = error.getLocalizedMessage();
-        failureModel.isFatal = true;
 
-        String failureReason = "";
-        try {
-            failureReason = new ObjectMapper().writeValueAsString(failureModel);
-        } catch (JsonProcessingException e) {
-            logError("Cannot serialize failure details");
-        }
-
-        result.isSuccess = false;
-        result.failure = failureReason;
+        result.status = ResultStatus.Failed;
+        result.failure = failureModel;
         String testName = testIdentifier.getDisplayName();
 
         testName = testName.substring(0, testName.length() - 2);
-        ResultModel.Step step = new ResultModel.Step();
-        step.isSuccess = false;
+        StepModel step = new StepModel();
+        step.status = ResultStatus.Failed;
         try{
-            step.screenshot = takeWebDriverScreenshot();
+            step.screenShot = takeWebDriverScreenshot();
         }
         catch(Exception e){
             logError("Unable to take screenshot", e);
         }
-        step.failure = failureReason;
+
+        step.failure = failureModel;
         step.name = testName;
 
         testTimer.stop();
         step.duration = testTimer.elapsed().toMillis();
 
-        ResultModel.CaseIteration caseIteration = new ResultModel.CaseIteration();
-        caseIteration.iterationNum = currentCaseIndex;
-        caseIteration.isSuccess = false;
-        caseIteration.steps = new ArrayList();
-        caseIteration.steps.add(step);
-        caseIteration.failure = failureReason;
+        currentCase.iterationNum = currentCaseIndex;
+        currentCase.status = ResultStatus.Failed;
+        currentCase.steps = new ArrayList();
+        currentCase.steps.add(step);
+        currentCase.failure = failureModel;
 
-
-        if (currentCase.iterations != null) {
-            currentCase.iterations.add(caseIteration);
-        }
-
-        currentCase.isSuccess = false;
-        currentSuiteIteration.cases.add(currentCase);
+        currentSuite.cases.add(currentCase);
 
         StatusModel status = createBaseStatusModel(testName);
         status.caze.iterationsFailed = 1;
