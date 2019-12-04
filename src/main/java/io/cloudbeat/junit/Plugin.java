@@ -1,10 +1,14 @@
 package io.cloudbeat.junit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.ArrayType;
 import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.reporting.ReportEntry;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -78,6 +82,19 @@ public class Plugin implements TestExecutionListener {
             }
         } else {
             logInfo("Plugin will be disabled. One of payloadpath, testmonitorurl, or testmonitortoken parameters is missing.");
+        }
+    }
+
+    @Override
+    public void reportingEntryPublished(TestIdentifier testIdentifier, ReportEntry entry){
+        String stepsJson = entry.getKeyValuePairs().values().stream().findFirst().orElse(null);
+        if(stepsJson != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                currentCase.steps = mapper.readValue(stepsJson, new TypeReference<ArrayList<StepModel>>() {});
+            } catch (Exception e) {
+
+            }
         }
     }
 
@@ -174,8 +191,6 @@ public class Plugin implements TestExecutionListener {
 
         currentCase.iterationNum = currentCaseIndex;
         currentCase.status = ResultStatus.Passed;
-        currentCase.steps = new ArrayList();
-        currentCase.steps.add(step);
 
         currentSuite.cases.add(currentCase);
 
@@ -215,8 +230,7 @@ public class Plugin implements TestExecutionListener {
 
         currentCase.iterationNum = currentCaseIndex;
         currentCase.status = ResultStatus.Failed;
-        currentCase.steps = new ArrayList();
-        currentCase.steps.add(step);
+
         currentCase.failure = failureModel;
 
         currentSuite.cases.add(currentCase);
