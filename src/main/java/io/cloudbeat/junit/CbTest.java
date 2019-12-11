@@ -124,7 +124,7 @@ public class CbTest implements AfterTestExecutionCallback {
                 endStepInner(step.name, getTestName(extensionContext), extensionContext.getExecutionException().isPresent());
             }
 
-            extensionContext.publishReportEntry(serializeSteps(steps));
+            extensionContext.publishReportEntry(serializeSteps(_steps.get(getTestName(extensionContext))));
         }
     }
 

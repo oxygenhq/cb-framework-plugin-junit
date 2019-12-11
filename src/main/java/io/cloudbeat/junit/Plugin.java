@@ -9,6 +9,8 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.reporting.ReportEntry;
+import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -178,8 +180,7 @@ public class Plugin implements TestExecutionListener {
             return;
         }
 
-        String testName = testIdentifier.getDisplayName();
-        testName = testName.substring(0, testName.length() - 2);
+        String testName = ((MethodSource) testIdentifier.getSource().get()).getMethodName();
 
         StepModel step = new StepModel();
         step.status = ResultStatus.Passed;
@@ -210,9 +211,7 @@ public class Plugin implements TestExecutionListener {
 
         result.status = ResultStatus.Failed;
         result.failure = failureModel;
-        String testName = testIdentifier.getDisplayName();
-
-        testName = testName.substring(0, testName.length() - 2);
+        String testName = ((MethodSource) testIdentifier.getSource().get()).getMethodName();
         StepModel step = new StepModel();
         step.status = ResultStatus.Failed;
         try{
