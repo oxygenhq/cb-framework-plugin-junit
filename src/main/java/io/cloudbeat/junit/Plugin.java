@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.ArrayType;
 import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
+import io.cloudbeat.common.*;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.reporting.ReportEntry;
 import org.junit.platform.engine.support.descriptor.ClassSource;
@@ -90,6 +91,7 @@ public class Plugin implements TestExecutionListener {
     @Override
     public void reportingEntryPublished(TestIdentifier testIdentifier, ReportEntry entry){
         String stepsJson = entry.getKeyValuePairs().values().stream().findFirst().orElse(null);
+        System.out.println(stepsJson);
         if(stepsJson != null) {
             ObjectMapper mapper = new ObjectMapper();
             try {
@@ -162,7 +164,6 @@ public class Plugin implements TestExecutionListener {
 
     @Override
     public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
-
         boolean isSuccess = testExecutionResult.getStatus() == TestExecutionResult.Status.SUCCESSFUL;
 
         if(!testIdentifier.isTest() && !isSuccess) {
@@ -212,20 +213,8 @@ public class Plugin implements TestExecutionListener {
         result.status = ResultStatus.Failed;
         result.failure = failureModel;
         String testName = ((MethodSource) testIdentifier.getSource().get()).getMethodName();
-        StepModel step = new StepModel();
-        step.status = ResultStatus.Failed;
-        try{
-            step.screenShot = takeWebDriverScreenshot();
-        }
-        catch(Exception e){
-            logError("Unable to take screenshot", e);
-        }
-
-        step.failure = failureModel;
-        step.name = testName;
 
         testTimer.stop();
-        step.duration = testTimer.elapsed().toMillis();
 
         currentCase.iterationNum = currentCaseIndex;
         currentCase.status = ResultStatus.Failed;
@@ -261,13 +250,6 @@ public class Plugin implements TestExecutionListener {
         status.caze.progress = 1;
 
         return status;
-    }
-
-    private String takeWebDriverScreenshot() {
-        WebDriver driver = JUnitRunner.getWebDriver();
-        if (driver == null || !(driver instanceof TakesScreenshot))
-            return null;
-        return ((TakesScreenshot)driver).getScreenshotAs(OutputType.BASE64);
     }
 
     private boolean report(String endpointUrl, Object data) {
