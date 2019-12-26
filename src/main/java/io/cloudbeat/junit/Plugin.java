@@ -148,8 +148,7 @@ public class Plugin implements TestExecutionListener {
 
         testTimer = Stopwatch.createStarted();
 
-        String testCaseName = testIdentifier.getDisplayName();
-        testCaseName = testCaseName.substring(0, testCaseName.length() - 2);
+        String testCaseName = ((MethodSource) testIdentifier.getSource().get()).getMethodName();
         currentCaseIndex++;
 
         currentCase = new CaseModel();
