@@ -210,7 +210,6 @@ public class Plugin implements TestExecutionListener {
         failureModel.message = error.getLocalizedMessage();
 
         result.status = ResultStatus.Failed;
-        result.failure = failureModel;
         String testName = ((MethodSource) testIdentifier.getSource().get()).getMethodName();
 
         testTimer.stop();
