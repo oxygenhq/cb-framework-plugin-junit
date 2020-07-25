@@ -18,7 +18,7 @@ import org.junit.platform.launcher.TestPlan;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-
+import io.cloudbeat.common.model.*;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -90,12 +90,20 @@ public class Plugin implements TestExecutionListener {
 
     @Override
     public void reportingEntryPublished(TestIdentifier testIdentifier, ReportEntry entry){
-        String stepsJson = entry.getKeyValuePairs().values().stream().findFirst().orElse(null);
-        System.out.println(stepsJson);
+        ObjectMapper mapper = new ObjectMapper();
+        String stepsJson = entry.getKeyValuePairs().getOrDefault("steps", null);
+        String logsJson = entry.getKeyValuePairs().getOrDefault("logs", null);
         if(stepsJson != null) {
-            ObjectMapper mapper = new ObjectMapper();
             try {
                 currentCase.steps = mapper.readValue(stepsJson, new TypeReference<ArrayList<StepModel>>() {});
+            } catch (Exception e) {
+
+            }
+        }
+
+        if(logsJson != null) {
+            try {
+                currentCase.logs = mapper.readValue(logsJson, new TypeReference<ArrayList<LogResult>>() {});
             } catch (Exception e) {
 
             }
