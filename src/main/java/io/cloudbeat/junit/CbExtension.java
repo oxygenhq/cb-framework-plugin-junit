@@ -19,6 +19,11 @@ public class CbExtension implements AfterTestExecutionCallback, BeforeTestExecut
         if(test == null) {
             return;
         }
+
+        if(test.driver != null) {
+            test.driver.close();
+        }
+
         Throwable ex = extensionContext.getExecutionException().orElse(null);
         boolean isTestSuccess = true;
         if(ex != null) {
