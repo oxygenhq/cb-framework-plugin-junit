@@ -6,7 +6,7 @@
 
     <groupId>io.cloudbeat.junit</groupId>
     <artifactId>cb-framework-plugin-junit</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
 
     <name>CloudBeat JUnit Plugin</name>
@@ -20,6 +20,13 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <scm>
         <url>https://github.com/oxygenhq/cb-framework-plugin-junit</url>
@@ -38,9 +45,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.cloudbeat.common</groupId>
-            <artifactId>cb-plugin-common</artifactId>
-            <version>0.10.1</version>
+            <groupId>com.github.oxygenhq</groupId>
+            <artifactId>cb-framework-plugin-common</artifactId>
+            <version>0.10.3</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
