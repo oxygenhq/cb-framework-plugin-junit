@@ -6,8 +6,11 @@ import io.cloudbeat.common.CbTestContext;
 
 import java.io.Console;
 import java.util.*;
+
+import io.cloudbeat.common.reporter.CbTestReporter;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.launcher.TestExecutionListener;
+import org.junit.platform.launcher.TestPlan;
 
 import java.lang.reflect.Method;
 
@@ -28,26 +31,32 @@ public class CbJunitExtension implements
         TestWatcher
 {
     static boolean started = false;
+    static CbTestContext ctx = CbTestContext.getInstance();
+
+    public CbJunitExtension() {
+
+    }
 
     @Override
     public synchronized void beforeAll(ExtensionContext context) {
+        System.out.println("beforeAll - thread: " + Thread.currentThread().getName());
+        System.out.println("beforeAll - class: " + context.getTestClass().get().getName());
         if (!started) {
             started = true;
             // The following line registers a callback hook when the root test context is shut down
             context.getRoot().getStore(GLOBAL).put("CB-JUNIT-EXT", this);
         }
-        if (!CbTestContext.getReporter().isStarted())
+        if (!ctx.getReporter().isStarted())
             setup(context);
 
-        JunitReporterUtils.startSuite(context);
+        JunitReporterUtils.startSuite(ctx.getReporter(), context);
     }
 
     @Override
     public void afterAll(ExtensionContext context) {
-        if (context.getRoot() == null)
-            return;
-        JunitReporterUtils.endSuite(context);
-        System.out.println("afterAll: " + context.toString());
+        System.out.println("afterAll - thread: " + Thread.currentThread().getName());
+        System.out.println("afterAll - class: " + context.getTestClass().get().getName());
+        JunitReporterUtils.endSuite(ctx.getReporter(), context);
     }
 
     @Override
@@ -64,9 +73,10 @@ public class CbJunitExtension implements
     @Override
     public void beforeTestExecution(ExtensionContext context) {
         //context.getTestMethod().get().getParameters()
-        System.out.println("beforeTestExecution: " + context.toString());
+        System.out.println("beforeTestExecution - thread: " + Thread.currentThread().getName());
+        System.out.println("beforeTestExecution - method: " + context.getTestMethod().get().getName());
         try {
-            JunitReporterUtils.startCase(context);
+            JunitReporterUtils.startCase(ctx.getReporter(), context);
         }
         catch (Exception e) {
             System.err.println("Error in beforeTestExecution: " + e.toString());
@@ -75,9 +85,10 @@ public class CbJunitExtension implements
 
     @Override
     public void afterTestExecution(ExtensionContext context) {
-        System.out.println("afterTestExecution: " + context.toString());
+        System.out.println("afterTestExecution - thread: " + Thread.currentThread().getName());
+        System.out.println("afterTestExecution - method: " + context.getTestMethod().get().getName());
         try {
-            JunitReporterUtils.endCase(context);
+            JunitReporterUtils.endCase(ctx.getReporter(), context);
         }
         catch (Exception e) {
             System.err.println("Error in afterTestExecution: " + e.toString());
@@ -87,7 +98,7 @@ public class CbJunitExtension implements
     @Override
     public void testDisabled(ExtensionContext context, Optional<String> reason) {
         try {
-            JunitReporterUtils.disabledCase(context, reason);
+            JunitReporterUtils.disabledCase(ctx.getReporter(), context, reason);
         }
         catch (Exception e) {
             System.err.println("Error in testDisabled: " + e.toString());
@@ -155,12 +166,15 @@ public class CbJunitExtension implements
     }
 
     private void setup(final ExtensionContext context) {
-        JunitReporterUtils.startInstance();
+        ctx.getReporter().setFramework("JUnit", "5");
+        JunitReporterUtils.startInstance(ctx.getReporter());
     }
 
     @Override
     public void close() throws Throwable {
-        JunitReporterUtils.endInstance();
+        System.out.println("close - thread: " + Thread.currentThread().getName());
+        JunitReporterUtils.endInstance(ctx.getReporter());
+        started = false;
     }
 
     /*@Override

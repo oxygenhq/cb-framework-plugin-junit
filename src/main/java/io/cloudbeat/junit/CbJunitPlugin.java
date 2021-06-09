@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import io.cloudbeat.common.*;
+import io.cloudbeat.common.reporter.model.FailureResult;
+import io.cloudbeat.common.reporter.model.LogEntryResult;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.reporting.ReportEntry;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -61,7 +63,7 @@ public class CbJunitPlugin implements TestExecutionListener {
 
         if(logsJson != null) {
             try {
-                currentCase.logs = mapper.readValue(logsJson, new TypeReference<ArrayList<LogResult>>() {});
+                currentCase.logs = mapper.readValue(logsJson, new TypeReference<ArrayList<LogEntryResult>>() {});
             } catch (Exception e) {
 
             }
@@ -170,9 +172,9 @@ public class CbJunitPlugin implements TestExecutionListener {
 
     private void onFailure(TestIdentifier testIdentifier, Throwable error) {
         isSuiteSuccess = false;
-        FailureResult failureModel = new FailureResult();
-        failureModel.type = "JUNIT_ERROR";
-        failureModel.message = error.getLocalizedMessage();
+        FailureResult failureModel = new FailureResult(error);
+        //failureModel.type = "JUNIT_ERROR";
+        //failureModel.message = error.getLocalizedMessage();
 
         result.status = ResultStatus.Failed;
         String testName = ((MethodSource) testIdentifier.getSource().get()).getMethodName();

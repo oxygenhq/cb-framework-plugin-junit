@@ -7,29 +7,29 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import java.util.Optional;
 
 public class JunitReporterUtils {
-    public static  void startInstance() {
-        CbTestReporter reporter = CbTestContext.getReporter();
+    public static  void startInstance(CbTestReporter reporter) {
+        //CbTestReporter reporter = CbTestContext.getReporter();
         if (!reporter.getInstance().isPresent())
             reporter.startInstance();
     }
 
-    public static  void endInstance() {
-        CbTestReporter reporter = CbTestContext.getReporter();
+    public static  void endInstance(CbTestReporter reporter) {
+        //CbTestReporter reporter = CbTestContext.getReporter();
         if (reporter.getInstance().isPresent())
             reporter.endInstance();
     }
 
-    public static void startSuite(ExtensionContext context) {
+    public static void startSuite(CbTestReporter reporter, ExtensionContext context) {
         final String classFqn = context.getTestClass().get().getName();
         final String classDisplayName = context.getTestClass().get().getSimpleName();
-        CbTestReporter reporter = CbTestContext.getReporter();
+        //CbTestReporter reporter = CbTestContext.getReporter();
         reporter.startSuite(classDisplayName, classFqn);
         System.out.println("startSuite: " + context.getTestClass().get().getName());
     }
 
-    public static void endSuite(ExtensionContext context) {
+    public static void endSuite(CbTestReporter reporter, ExtensionContext context) {
         final String classFqn = context.getTestClass().get().getName();
-        CbTestReporter reporter = CbTestContext.getReporter();
+        //CbTestReporter reporter = CbTestContext.getReporter();
         reporter.endSuite(classFqn);
         /*if (context.getStore(NAMESPACE).get(FAILED) == null) {
             finishTestItem(context);
@@ -39,31 +39,31 @@ public class JunitReporterUtils {
         }*/
     }
 
-    public static void startCase(ExtensionContext context) throws Exception {
+    public static void startCase(CbTestReporter reporter, ExtensionContext context) throws Exception {
         final String classFqn = context.getTestClass().get().getName();
         final String methodName = context.getTestMethod().get().getName();
         final String methodFqn = String.format("%s.%s", classFqn, methodName);
-        CbTestReporter reporter = CbTestContext.getReporter();
-        reporter.startCase(methodName, methodFqn);
+        //CbTestReporter reporter = CbTestContext.getReporter();
+        reporter.startCase(methodName, methodFqn, classFqn);
     }
 
-    public static void endCase(ExtensionContext context) throws Exception {
+    public static void endCase(CbTestReporter reporter, ExtensionContext context) throws Exception {
         final String classFqn = context.getTestClass().get().getName();
         final String methodName = context.getTestMethod().get().getName();
         final String methodFqn = String.format("%s.%s", classFqn, methodName);
-        CbTestReporter reporter = CbTestContext.getReporter();
+        //CbTestReporter reporter = CbTestContext.getReporter();
         if (context.getExecutionException().isPresent())
             reporter.failCase(methodFqn, classFqn, context.getExecutionException().get());
         else
             reporter.passCase(methodFqn, classFqn);
     }
 
-    public static void disabledCase(ExtensionContext context, Optional<String> reason) throws Exception {
+    public static void disabledCase(CbTestReporter reporter, ExtensionContext context, Optional<String> reason) throws Exception {
         final String classFqn = context.getTestClass().get().getName();
         final String methodName = context.getTestMethod().get().getName();
         final String methodFqn = String.format("%s.%s", classFqn, methodName);
-        CbTestReporter reporter = CbTestContext.getReporter();
-        reporter.startCase(methodName, methodFqn);
+        //CbTestReporter reporter = CbTestContext.getReporter();
+        reporter.startCase(methodName, methodFqn, classFqn);
         reporter.skipCase(methodFqn, classFqn);
     }
 }
