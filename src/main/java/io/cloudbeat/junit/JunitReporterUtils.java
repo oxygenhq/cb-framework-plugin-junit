@@ -57,7 +57,7 @@ public class JunitReporterUtils {
         if (context.getExecutionException().isPresent())
             reporter.failCase(methodFqn, context.getExecutionException().get());
         else
-            reporter.passCase(methodFqn);
+            reporter.endCase(methodFqn);
     }
 
     public static void disabledCase(CbTestReporter reporter, ExtensionContext context, Optional<String> reason) throws Exception {
