@@ -5,14 +5,22 @@ import com.google.auto.service.AutoService;
 import io.cloudbeat.common.CbTestContext;
 
 import java.io.Console;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 
+import io.cloudbeat.common.Helper;
+import io.cloudbeat.common.config.CbConfig;
 import io.cloudbeat.common.reporter.CbTestReporter;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.lang.reflect.Method;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.extension.ExtensionContext.Namespace.GLOBAL;
 
@@ -37,6 +45,20 @@ public class CbJunitExtension implements
 
     }
 
+    public static WebDriver createWebDriver() throws MalformedURLException {
+        return createWebDriver(null);
+    }
+    public static WebDriver createWebDriver(DesiredCapabilities extraCapabilities) throws MalformedURLException {
+        if (ctx == null || ctx.getReporter() == null)
+            return null;
+        CbTestReporter reporter = ctx.getReporter();
+        DesiredCapabilities capabilities = Helper.mergeUserAndCloudbeatCapabilities(extraCapabilities);
+        CbConfig config = CbTestContext.getInstance().getConfig();
+        final String webdriverUrl = config != null && config.getSeleniumUrl() != null ? config.getSeleniumUrl() : CbConfig.DEFAULT_WEBDRIVER_URL;
+        RemoteWebDriver driver = new RemoteWebDriver(new URL(webdriverUrl), capabilities);
+        return reporter.getWebDriverWrapper().wrap(driver);
+    }
+
     @Override
     public synchronized void beforeAll(ExtensionContext context) {
         System.out.println("beforeAll - thread: " + Thread.currentThread().getName());
@@ -46,35 +68,35 @@ public class CbJunitExtension implements
             // The following line registers a callback hook when the root test context is shut down
             context.getRoot().getStore(GLOBAL).put("CB-JUNIT-EXT", this);
         }
-        if (!ctx.getReporter().isStarted())
+        if (ctx.isActive() && !ctx.getReporter().isStarted())
             setup(context);
 
-        JunitReporterUtils.startSuite(ctx.getReporter(), context);
+        if (ctx.isActive())
+            JunitReporterUtils.startSuite(ctx.getReporter(), context);
     }
 
     @Override
     public void afterAll(ExtensionContext context) {
-        System.out.println("afterAll - thread: " + Thread.currentThread().getName());
-        System.out.println("afterAll - class: " + context.getTestClass().get().getName());
-        JunitReporterUtils.endSuite(ctx.getReporter(), context);
+        if (ctx.isActive())
+            JunitReporterUtils.endSuite(ctx.getReporter(), context);
     }
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        //context.getParent().ifPresent(this::startTemplate);
-        System.out.println("beforeEach: " + context.toString());
+        if (ctx.isActive())
+            JunitReporterUtils.startBeforeEachHook(ctx.getReporter(), context);
     }
 
     @Override
     public void afterEach(ExtensionContext context) {
-        System.out.println("afterEach: " + context.toString());
+        if (ctx.isActive())
+            JunitReporterUtils.endBeforeEachHook(ctx.getReporter(), context);
     }
 
     @Override
     public void beforeTestExecution(ExtensionContext context) {
-        //context.getTestMethod().get().getParameters()
-        System.out.println("beforeTestExecution - thread: " + Thread.currentThread().getName());
-        System.out.println("beforeTestExecution - method: " + context.getTestMethod().get().getName());
+        if (!ctx.isActive())
+            return;
         try {
             JunitReporterUtils.startCase(ctx.getReporter(), context);
         }
@@ -85,8 +107,8 @@ public class CbJunitExtension implements
 
     @Override
     public void afterTestExecution(ExtensionContext context) {
-        System.out.println("afterTestExecution - thread: " + Thread.currentThread().getName());
-        System.out.println("afterTestExecution - method: " + context.getTestMethod().get().getName());
+        if (!ctx.isActive())
+            return;
         try {
             JunitReporterUtils.endCase(ctx.getReporter(), context);
         }
@@ -97,6 +119,8 @@ public class CbJunitExtension implements
 
     @Override
     public void testDisabled(ExtensionContext context, Optional<String> reason) {
+        if (!ctx.isActive())
+            return;
         try {
             JunitReporterUtils.disabledCase(ctx.getReporter(), context, reason);
         }
@@ -120,6 +144,14 @@ public class CbJunitExtension implements
 
     @Override
     public void testFailed(ExtensionContext context, Throwable throwable) {
+        if (!ctx.isActive())
+            return;
+        try {
+            JunitReporterUtils.failedCase(ctx.getReporter(), context, throwable);
+        }
+        catch (Throwable e) {
+            System.err.println("Error in testFailed: " + e.toString());
+        }
     }
 
     /*@Override
@@ -155,23 +187,17 @@ public class CbJunitExtension implements
         return testInfo.getTestClass().get().getName() + "." + testInfo.getTestMethod().get().getName();
     }*/
 
-
-    private String serialize(Object object) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.writeValueAsString(object);
-        } catch (Exception e) {
-            return "";
-        }
-    }
-
     private void setup(final ExtensionContext context) {
+        if (!ctx.isActive())
+            return;
         ctx.getReporter().setFramework("JUnit", "5");
         JunitReporterUtils.startInstance(ctx.getReporter());
     }
 
     @Override
     public void close() throws Throwable {
+        if (!ctx.isActive())
+            return;
         System.out.println("close - thread: " + Thread.currentThread().getName());
         JunitReporterUtils.endInstance(ctx.getReporter());
         started = false;
@@ -192,4 +218,30 @@ public class CbJunitExtension implements
 
         test.currentTestName = getTestName(extensionContext);
     }*/
+    public static String startStep(final String name) {
+        CbTestReporter reporter = getReporter();
+        if (reporter == null)
+            return null;
+        return reporter.startStep(name);
+    }
+
+    public static void endLastStep() {
+        CbTestReporter reporter = getReporter();
+        if (reporter == null)
+            return;
+        reporter.endLastStep();
+    }
+
+    public static void step(final String name, Runnable stepFunc) {
+        CbTestReporter reporter = getReporter();
+        if (reporter == null)
+            return;
+        reporter.step(name, stepFunc);
+    }
+
+    private static CbTestReporter getReporter() {
+        if (CbJunitExtension.ctx == null)
+            return null;
+        return CbJunitExtension.ctx.getReporter();
+    }
 }
