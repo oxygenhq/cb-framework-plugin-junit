@@ -21,6 +21,13 @@
         </license>
     </licenses>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <scm>
         <url>https://github.com/oxygenhq/cb-framework-plugin-junit</url>
     </scm>
@@ -38,9 +45,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.cloudbeat.common</groupId>
-            <artifactId>cb-plugin-common</artifactId>
-            <version>0.10.3</version>
+            <groupId>com.github.oxygenhq</groupId>
+            <artifactId>cb-framework-plugin-common</artifactId>
+            <version>0.11.0</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
