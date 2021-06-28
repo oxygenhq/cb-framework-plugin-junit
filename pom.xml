@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.cloudbeat.framework</groupId>
-    <artifactId>cb-framework-junit5</artifactId>
+    <artifactId>cb-framework-plugin-junit</artifactId>
     <version>0.5.0</version>
     <packaging>jar</packaging>
 
