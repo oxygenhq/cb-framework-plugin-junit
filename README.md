@@ -12,8 +12,8 @@ This plugin allows executing Java based JUnit tests using the CloudBeat platform
 Add the plugin to your project. If you are using a maven based project, you can directly add this library as a dependency:
 ```xml
 <dependency>  
-  <groupId>io.cloudbeat.junit</groupId>  
-  <artifactId>cb-plugin-junit</artifactId>  
+  <groupId>io.cloudbeat.framework</groupId>  
+  <artifactId>cb-framework-junit5</artifactId>  
   <version>0.1.0</version>  
 </dependency>
 ```

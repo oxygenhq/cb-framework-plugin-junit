@@ -49,8 +49,13 @@ public class CbJunitExtension implements
         return createWebDriver(null);
     }
     public static WebDriver createWebDriver(DesiredCapabilities extraCapabilities) throws MalformedURLException {
-        if (ctx == null || ctx.getReporter() == null)
+        if (ctx == null || ctx.getReporter() == null) {
+            // if user called createWebDriver method outside CloudBeat context and provided capabilities
+            // then try to initialize a regular WebDriver with default webdriver URL
+            if (extraCapabilities != null)
+                return new RemoteWebDriver(new URL(CbConfig.DEFAULT_WEBDRIVER_URL), extraCapabilities);
             return null;
+        }
         CbTestReporter reporter = ctx.getReporter();
         DesiredCapabilities capabilities = Helper.mergeUserAndCloudbeatCapabilities(extraCapabilities);
         CbConfig config = CbTestContext.getInstance().getConfig();
