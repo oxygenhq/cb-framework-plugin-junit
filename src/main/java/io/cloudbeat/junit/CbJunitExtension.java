@@ -103,6 +103,7 @@ public class CbJunitExtension implements
         if (!ctx.isActive())
             return;
         try {
+            ctx.setCurrentTestClass(context.getTestClass().orElse(null));
             JunitReporterUtils.startCase(ctx.getReporter(), context);
         }
         catch (Exception e) {
@@ -116,6 +117,7 @@ public class CbJunitExtension implements
             return;
         try {
             JunitReporterUtils.endCase(ctx.getReporter(), context);
+            ctx.setCurrentTestClass(null);
         }
         catch (Exception e) {
             System.err.println("Error in afterTestExecution: " + e.toString());
@@ -153,44 +155,12 @@ public class CbJunitExtension implements
             return;
         try {
             JunitReporterUtils.failedCase(ctx.getReporter(), context, throwable);
+            ctx.setCurrentTestClass(null);
         }
         catch (Throwable e) {
             System.err.println("Error in testFailed: " + e.toString());
         }
     }
-
-    /*@Override
-    public void afterTestExecution(ExtensionContext extensionContext) throws Exception {
-        CbJunit test = (CbJunit) extensionContext.getTestInstance().orElse(null);
-        FailureModel failureModel = null;
-        if(test == null) {
-            return;
-        }
-
-        if(test.driver != null) {
-            test.driver.close();
-        }
-
-        Throwable ex = extensionContext.getExecutionException().orElse(null);
-        boolean isTestSuccess = true;
-        if(ex != null) {
-            isTestSuccess = false;
-            failureModel = new FailureModel(ex, test.getCurrentTestPackageName());
-        }
-
-        String testName = getTestName(extensionContext);
-
-        ArrayList<StepModel> steps = test.getStepsForMethod(testName, isTestSuccess, failureModel);
-
-        ArrayList<LogResult> logs = test.getLastLogEntries();
-
-        extensionContext.publishReportEntry("steps", serialize(steps));
-        extensionContext.publishReportEntry("logs", serialize(logs));
-    }
-
-    private static String getTestName(ExtensionContext testInfo) {
-        return testInfo.getTestClass().get().getName() + "." + testInfo.getTestMethod().get().getName();
-    }*/
 
     private void setup(final ExtensionContext context) {
         if (!ctx.isActive())

@@ -66,7 +66,7 @@ public class JunitReporterUtils {
         final String methodFqn = String.format(JAVA_METHOD_FQN_FORMAT, classFqn, methodName);
         //CbTestReporter reporter = CbTestContext.getReporter();
         reporter.startCase(methodName, methodFqn, classFqn);
-        reporter.skipCase(methodFqn, classFqn);
+        reporter.skipCase(methodFqn);
     }
     public static void failedCase(
             CbTestReporter reporter,

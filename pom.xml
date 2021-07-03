@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <name>CloudBeat JUnit 5 Extension</name>
-    <description>JUnit 5 extension to run and report test results in CloudBeat</description>
+    <description>CloudBeat extension for JUnit 5 to run and analyze test results</description>
     <url>https://github.com/oxygenhq/cb-framework-plugin-junit5</url>
 
     <licenses>
