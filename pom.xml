@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.cloudbeat.junit</groupId>
+    <groupId>io.cloudbeat.framework</groupId>
     <artifactId>cb-framework-plugin-junit</artifactId>
-    <version>0.4.0</version>
+    <version>0.6.1</version>
     <packaging>jar</packaging>
 
-    <name>CloudBeat JUnit Plugin</name>
-    <description>CloudBeat plugin for JUnit Java</description>
+    <name>CloudBeat JUnit 5 Extension</name>
+    <description>CloudBeat extension for JUnit 5 to run and analyze test results</description>
     <url>https://github.com/oxygenhq/cb-framework-plugin-junit5</url>
 
     <licenses>
@@ -47,17 +47,7 @@
         <dependency>
             <groupId>com.github.oxygenhq</groupId>
             <artifactId>cb-framework-plugin-common</artifactId>
-            <version>0.10.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.9.8</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.9.8</version>
+            <version>0.12.0</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
@@ -86,6 +76,12 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.5.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.5.0-M1</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

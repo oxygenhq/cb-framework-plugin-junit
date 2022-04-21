@@ -2,23 +2,21 @@ package io.cloudbeat.junit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.ArrayType;
-import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import io.cloudbeat.common.*;
+import io.cloudbeat.common.reporter.model.FailureResult;
+import io.cloudbeat.common.reporter.model.LogEntryResult;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.reporting.ReportEntry;
-import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
 import io.cloudbeat.common.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -27,11 +25,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 
-@AutoService(TestExecutionListener.class)
-public class Plugin implements TestExecutionListener {
+//@AutoService(TestExecutionListener.class)
+public class CbJunitPlugin implements TestExecutionListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CbJunitPlugin.class);
+
     private Stopwatch testTimer;
     private Stopwatch suiteTimer;
-    private PayloadModel payload;
+    private CbConfig payload;
     private ResultModel result;
     private String testMonitorStatusUrl;
     private String testMonitorToken;
@@ -42,50 +42,10 @@ public class Plugin implements TestExecutionListener {
     private boolean isPluginDisabled;
     private boolean isSuiteSuccess = true;
 
-    public Plugin() {
+    public CbJunitPlugin() {
         isPluginDisabled = true;
-        String payloadpath = System.getProperty("payloadpath");;
-        String testmonitorUrl = System.getProperty("testmonitorurl");
-        testMonitorToken = System.getProperty("testmonitortoken");
-
-        if (payloadpath != null && testmonitorUrl != null && testMonitorToken != null) {
-            testMonitorStatusUrl = testmonitorUrl + "/status";
-
-            try {
-                payload = PayloadModel.Load(payloadpath);
-                result = new ResultModel();
-                result.runId = payload.runId;
-                result.instanceId = payload.instanceId;
-                result.capabilities = payload.capabilities;
-                result.metadata = payload.metadata;
-                result.environmentVariables = payload.environmentVariables;
-                result.suites = new ArrayList();
-                result.startTime = new Date();
-
-                currentSuite = new SuiteModel();
-                currentSuite.cases = new ArrayList();
-
-                suiteTimer = Stopwatch.createStarted();
-
-                if (result.capabilities.containsKey("browserName")) {
-                    // remove "technology" prefix from the browserName. old CB version uses technology.browser as browserName
-                    // FIXME: this should be removed once CB backend is adapted to send only the browser name without technology prefix.
-                    String browserName = result.capabilities.get("browserName");
-                    int browserNameIdx = browserName.indexOf('.');
-                    if (browserNameIdx > 0)
-                        browserName = browserName.substring(browserNameIdx + 1);
-                    System.setProperty("browserName", browserName);
-                    isPluginDisabled = false;
-                    return;
-                }
-
-                logError("Plugin will be disabled. browserName is not specified in capabilities.");
-            } catch (Exception e) {
-                logError("Plugin will be disabled. Unable to read/deserialize payload file.", e);
-            }
-        } else {
-            logInfo("Plugin will be disabled. One of payloadpath, testmonitorurl, or testmonitortoken parameters is missing.");
-        }
+        // initialize CloudBeat test context, if not previously initialized
+        CbTestContext.getInstance();
     }
 
     @Override
@@ -103,7 +63,7 @@ public class Plugin implements TestExecutionListener {
 
         if(logsJson != null) {
             try {
-                currentCase.logs = mapper.readValue(logsJson, new TypeReference<ArrayList<LogResult>>() {});
+                currentCase.logs = mapper.readValue(logsJson, new TypeReference<ArrayList<LogEntryResult>>() {});
             } catch (Exception e) {
 
             }
@@ -115,7 +75,6 @@ public class Plugin implements TestExecutionListener {
         if(isPluginDisabled) {
             return;
         }
-
 
         currentSuite.status = isSuiteSuccess ? ResultStatus.Passed : ResultStatus.Failed;
         result.suites.add(currentSuite);
@@ -161,7 +120,7 @@ public class Plugin implements TestExecutionListener {
 
         currentCase = new CaseModel();
 
-        PayloadModel.Case caze = payload.cases.get(testCaseName);
+        CbConfig.Case caze = payload.cases.get(testCaseName);
         if (caze != null) {
             currentCase.id = caze.id;
         }
@@ -213,9 +172,9 @@ public class Plugin implements TestExecutionListener {
 
     private void onFailure(TestIdentifier testIdentifier, Throwable error) {
         isSuiteSuccess = false;
-        FailureModel failureModel = new FailureModel();
-        failureModel.type = "JUNIT_ERROR";
-        failureModel.message = error.getLocalizedMessage();
+        FailureResult failureModel = new FailureResult(error);
+        //failureModel.type = "JUNIT_ERROR";
+        //failureModel.message = error.getLocalizedMessage();
 
         result.status = ResultStatus.Failed;
         String testName = ((MethodSource) testIdentifier.getSource().get()).getMethodName();
@@ -246,7 +205,7 @@ public class Plugin implements TestExecutionListener {
         status.progress = (float)currentCaseIndex / payload.cases.size();
 
         status.caze = new StatusModel.CaseStatus();
-        PayloadModel.Case caze = payload.cases.get(testCaseName);
+        CbConfig.Case caze = payload.cases.get(testCaseName);
         if (caze != null) {
             status.caze.id = caze.id;
         }
