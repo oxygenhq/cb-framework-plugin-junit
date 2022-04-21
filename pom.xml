@@ -45,8 +45,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.cloudbeat</groupId>
-            <artifactId>cb-common</artifactId>
+            <groupId>com.github.oxygenhq</groupId>
+            <artifactId>cb-framework-plugin-common</artifactId>
             <version>0.12.0</version>
         </dependency>
         <dependency>
