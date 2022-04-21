@@ -6,7 +6,7 @@
 
     <groupId>io.cloudbeat.framework</groupId>
     <artifactId>cb-framework-plugin-junit</artifactId>
-    <version>0.6.0</version>
+    <version>0.6.1</version>
     <packaging>jar</packaging>
 
     <name>CloudBeat JUnit 5 Extension</name>
@@ -73,11 +73,11 @@
             <version>1.0-rc2</version>
         </dependency>
         <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>5.5.1</version>
-        <scope>compile</scope>
-    </dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.5.1</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
