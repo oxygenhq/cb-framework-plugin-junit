@@ -6,7 +6,7 @@
 
     <groupId>io.cloudbeat.framework</groupId>
     <artifactId>cb-framework-plugin-junit</artifactId>
-    <version>0.6.1</version>
+    <version>0.6.3</version>
     <packaging>jar</packaging>
 
     <name>CloudBeat JUnit 5 Extension</name>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>com.github.oxygenhq</groupId>
             <artifactId>cb-framework-plugin-common</artifactId>
-            <version>0.12.0</version>
+            <version>0.12.1</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
