@@ -86,10 +86,16 @@ public class JunitReporterUtils {
             reporter.failStep(methodFqn, throwable);
         }
         // otherwise, start and end case with failure
+        /*else if (reporter.getLastCase() != null
+                && reporter.getLastCase().getFqn() != null
+                && reporter.getLastCase().getFqn().equals(methodFqn)
+        ) {
+            reporter.failCase(methodFqn, throwable);
+        }
         else {
             reporter.startCase(methodName, methodFqn, classFqn);
             reporter.failCase(methodFqn, throwable);
-        }
+        }*/
     }
 
     public static void startBeforeEachHook(CbTestReporter reporter, ExtensionContext context) {

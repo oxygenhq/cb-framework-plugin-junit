@@ -45,9 +45,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.oxygenhq</groupId>
-            <artifactId>cb-framework-plugin-common</artifactId>
+            <groupId>io.cloudbeat</groupId>
+            <artifactId>cb-common</artifactId>
             <version>0.12.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.13.3</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
@@ -58,13 +63,13 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.5.1</version>
+            <version>1.8.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.5.1</version>
+            <version>1.8.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -75,13 +80,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.5.1</version>
+            <version>5.8.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.5.0-M1</version>
+            <version>5.8.2</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
