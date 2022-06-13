@@ -12,6 +12,10 @@ import java.util.*;
 import io.cloudbeat.common.Helper;
 import io.cloudbeat.common.config.CbConfig;
 import io.cloudbeat.common.reporter.CbTestReporter;
+import io.cloudbeat.common.restassured.CbRestAssuredFilter;
+import io.cloudbeat.common.restassured.RestAssuredFailureListener;
+import io.restassured.RestAssured;
+import io.restassured.config.FailureConfig;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
@@ -44,7 +48,11 @@ public class CbJunitExtension implements
     public CbJunitExtension() {
 
     }
-
+    public static void setupRestAssured() {
+        RestAssured.filters(new CbRestAssuredFilter(ctx));
+        RestAssured.config = RestAssured.config()
+            .failureConfig(FailureConfig.failureConfig().with().failureListeners(new RestAssuredFailureListener(ctx)));
+    }
     public static WebDriver createWebDriver() throws MalformedURLException {
         return createWebDriver(null);
     }
