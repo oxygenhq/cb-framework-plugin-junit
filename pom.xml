@@ -6,7 +6,7 @@
 
     <groupId>io.cloudbeat.framework</groupId>
     <artifactId>cb-framework-plugin-junit</artifactId>
-    <version>0.6.9</version>
+    <version>0.6.10</version>
     <packaging>jar</packaging>
 
     <name>CloudBeat JUnit 5 Extension</name>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>io.cloudbeat</groupId>
             <artifactId>cb-framework-plugin-common</artifactId>
-            <version>0.12.9</version>
+            <version>0.12.10</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -93,6 +93,12 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>5.1.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

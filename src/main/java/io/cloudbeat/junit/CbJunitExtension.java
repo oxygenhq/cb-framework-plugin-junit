@@ -66,10 +66,15 @@ public class CbJunitExtension implements
         }
         CbTestReporter reporter = ctx.getReporter();
         DesiredCapabilities capabilities = Helper.mergeUserAndCloudbeatCapabilities(extraCapabilities);
-        CbConfig config = CbTestContext.getInstance().getConfig();
-        final String webdriverUrl = config != null && config.getSeleniumUrl() != null ? config.getSeleniumUrl() : CbConfig.DEFAULT_WEBDRIVER_URL;
-        RemoteWebDriver driver = new RemoteWebDriver(new URL(webdriverUrl), capabilities);
+        RemoteWebDriver driver = new RemoteWebDriver(new URL(getWebDriverUrl()), capabilities);
         return reporter.getWebDriverWrapper().wrap(driver);
+    }
+
+    public static String getWebDriverUrl() {
+        CbConfig config = CbTestContext.getInstance().getConfig();
+        if (config != null)
+            return config.getSeleniumOrAppiumUrl();
+        return CbConfig.DEFAULT_WEBDRIVER_URL;
     }
 
     @Override
