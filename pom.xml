@@ -6,7 +6,7 @@
 
     <groupId>io.cloudbeat.framework</groupId>
     <artifactId>cb-framework-plugin-junit</artifactId>
-    <version>0.6.10</version>
+    <version>0.6.11</version>
     <packaging>jar</packaging>
 
     <name>CloudBeat JUnit 5 Extension</name>
