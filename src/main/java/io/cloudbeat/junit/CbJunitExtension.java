@@ -12,6 +12,7 @@ import java.util.*;
 import io.cloudbeat.common.Helper;
 import io.cloudbeat.common.config.CbConfig;
 import io.cloudbeat.common.reporter.CbTestReporter;
+import io.cloudbeat.common.reporter.model.StepResult;
 import io.cloudbeat.common.restassured.CbRestAssuredFilter;
 import io.cloudbeat.common.restassured.RestAssuredFailureListener;
 import io.restassured.RestAssured;
@@ -212,7 +213,8 @@ public class CbJunitExtension implements
         CbTestReporter reporter = getReporter();
         if (reporter == null)
             return null;
-        return reporter.startStep(name);
+        final StepResult step = reporter.startStep(name);
+        return step != null ? step.getId() : null;
     }
 
     public static void endLastStep() {

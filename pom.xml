@@ -47,7 +47,7 @@
         <dependency>
             <groupId>io.cloudbeat</groupId>
             <artifactId>cb-framework-plugin-common</artifactId>
-            <version>0.12.10</version>
+            <version>0.12.11</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
