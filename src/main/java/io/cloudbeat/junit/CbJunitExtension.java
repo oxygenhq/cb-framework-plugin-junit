@@ -70,6 +70,29 @@ public class CbJunitExtension implements
         RemoteWebDriver driver = new RemoteWebDriver(new URL(getWebDriverUrl()), capabilities);
         return reporter.getWebDriverWrapper().wrap(driver);
     }
+    public static WebDriver wrapWebDriver(WebDriver driver) {
+        if (ctx == null || ctx.getReporter() == null)
+            return driver;
+        CbTestReporter reporter = ctx.getReporter();
+        return reporter.getWebDriverWrapper().wrap(driver);
+    }
+    public static String getEnv(String name) {
+        if (ctx == null || ctx.getReporter() == null)
+            return System.getenv(name);
+        Map<String, String> cbEnvVars = ctx.getConfig().getEnvironmentVariables();
+        if (cbEnvVars != null && cbEnvVars.containsKey(name))
+            return cbEnvVars.get(name);
+        return System.getenv(name);
+    }
+    public static DesiredCapabilities getCapabilities() {
+        return Helper.getCapabilitiesFromConfig();
+    }
+
+    public static DesiredCapabilities getCapabilities(DesiredCapabilities extraCapabilities) {
+        if (extraCapabilities == null)
+            return Helper.getCapabilitiesFromConfig();
+        return Helper.mergeUserAndCloudbeatCapabilities(extraCapabilities);
+    }
 
     public static String getWebDriverUrl() {
         CbConfig config = CbTestContext.getInstance().getConfig();
